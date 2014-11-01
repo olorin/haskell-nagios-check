@@ -5,7 +5,8 @@
 module System.Nagios.Plugin
 (
     CheckResult(..),
-    NagiosPlugin
+    NagiosPlugin,
+    finish
 ) where
 
 import Control.Applicative
@@ -90,8 +91,7 @@ fmtResults = fmtResult . worstResult
         ]
 
 checkOutput :: CheckState -> Text
-checkOutput (rs, pds) = do
-    T.concat $
+checkOutput (rs, pds) = T.concat $
         [ fmtResults rs
         , " | "
         , fmtPerfData pds
