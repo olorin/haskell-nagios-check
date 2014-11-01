@@ -1,10 +1,10 @@
-name:                hnagiosplugin
+name:                nagios-check
 version:             0.1.0.0
 synopsis:            Write Nagios plugins
 description:         Implements Nagios plugin development guidelines
                      within a Haskell framework for writing Nagios
                      checks.
-homepage:            https://github.com/fractalcat/hnagiosplugin
+homepage:            https://github.com/fractalcat/nagios-check
 license:             MIT
 license-file:        LICENSE
 author:              Sharif Olorin
