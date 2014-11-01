@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE RecordWildCards            #-}
 
 module System.Nagios.Plugin
 (
@@ -9,15 +9,15 @@ module System.Nagios.Plugin
     finish
 ) where
 
-import Control.Applicative
-import Control.Monad
-import Control.Monad.State.Lazy
-import Data.Nagios.Perfdata.Metric (UOM)
-import Data.Int
-import Data.List
-import qualified Data.Text as T
-import Data.Text (Text)
-import System.Exit
+import           Control.Applicative
+import           Control.Monad
+import           Control.Monad.State.Lazy
+import           Data.Int
+import           Data.List
+import           Data.Nagios.Perfdata.Metric (UOM)
+import           Data.Text                   (Text)
+import qualified Data.Text                   as T
+import           System.Exit
 
 -- | Nagios plugin exit statuses. Ordered by priority -
 --   OK < Warning < Critical < Unknown, which correspond to plugin exit
