@@ -11,12 +11,13 @@ import Control.Monad
 import Control.Monad.State.Lazy
 import Data.Nagios.Perfdata.Metric (UOM)
 import Data.Int
+import Data.List
 import qualified Data.Text as T
 import Data.Text (Text)
 import System.Exit
 
 data CheckStatus = OK | Warning | Critical | Unknown
-  deriving (Enum)
+  deriving (Enum, Eq, Ord)
 
 instance Show CheckStatus where
     show OK = "OK"
@@ -25,6 +26,7 @@ instance Show CheckStatus where
     show Unknown = "UNKNOWN"
 
 data CheckResult = CheckResult CheckStatus Text
+  deriving (Ord, Eq, Show)
 
 data PerfValue = RealValue Double | IntegralValue Int64
 
@@ -47,6 +49,14 @@ newtype NagiosPlugin a = NagiosPlugin
   {
     unNagiosPlugin :: StateT CheckState IO a
   } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState)
+
+defaultResult :: CheckResult
+defaultResult = CheckResult Unknown $ T.pack "no check result specified"
+
+worstResult :: [CheckResult] -> CheckResult
+worstResult rs = case (sort rs) of
+    [] -> defaultResult
+    rs' -> head rs'
 
 finish :: NagiosPlugin ()
 finish = do
