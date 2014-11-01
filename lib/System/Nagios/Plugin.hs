@@ -43,9 +43,9 @@ newtype CheckState = CheckState ([CheckResult], [PerfDatum])
 
 newtype NagiosPlugin a = NagiosPlugin (StateT CheckState IO a)
 
-exitWithStatus :: CheckResult -> IO a
-exitWithStatus (CheckResult OK t) = putTxt t >> exitWith ExitSuccess
-exitWithStatus (CheckResult r t) = putTxt t >> exitWith (ExitFailure $ fromEnum r)
+exitWithStatus :: (CheckStatus, Text) -> IO a
+exitWithStatus (OK, t) = putTxt t >> exitWith ExitSuccess
+exitWithStatus (r, t) = putTxt t >> exitWith (ExitFailure $ fromEnum r)
 
 putTxt :: Text -> IO ()
 putTxt = (putStrLn . T.unpack)
