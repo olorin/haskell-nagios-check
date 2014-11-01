@@ -19,7 +19,17 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import System.Exit
 
-data CheckStatus = OK | Warning | Critical | Unknown
+-- | Nagios plugin exit statuses. Ordered by priority -
+--   OK < Warning < Critical < Unknown, which correspond to plugin exit
+--   statuses of 0, 1, 2, and 3 respectively.
+data CheckStatus = OK       -- | Check executed successfully and
+                            --   detected no service problems.
+                 | Warning  -- | Nothing's actually broken but this
+                            --   should be followed up.
+                 | Critical -- | Check executed successfully and detected
+                            --   a service failure.
+                 | Unknown  -- | Check unable to determine service
+                            --   status.
   deriving (Enum, Eq, Ord)
 
 instance Show CheckStatus where
@@ -59,6 +69,8 @@ newtype NagiosPlugin a = NagiosPlugin
 defaultResult :: CheckResult
 defaultResult = (Unknown, T.pack "no check result specified")
 
+-- | Returns result with greatest badness, or a default UNKNOWN result
+--   if no results have been specified.
 worstResult :: [CheckResult] -> CheckResult
 worstResult rs = case (reverse . sort) rs of
     [] -> defaultResult
