@@ -56,7 +56,7 @@ defaultResult = CheckResult Unknown $ T.pack "no check result specified"
 worstResult :: [CheckResult] -> CheckResult
 worstResult rs = case (sort rs) of
     [] -> defaultResult
-    rs' -> head rs'
+    (x:_) -> x
 
 finish :: NagiosPlugin ()
 finish = do
