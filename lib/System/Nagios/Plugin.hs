@@ -54,7 +54,7 @@ defaultResult :: CheckResult
 defaultResult = CheckResult Unknown $ T.pack "no check result specified"
 
 worstResult :: [CheckResult] -> CheckResult
-worstResult rs = case (sort rs) of
+worstResult rs = case (reverse . sort) rs of
     [] -> defaultResult
     (x:_) -> x
 
