@@ -1,4 +1,4 @@
-hnagiosplugin
-=============
+nagios-check
+============
 
-Write Nagios plugins in Haskell.
+Write Nagios (or Icinga, Shinken, et cetera) plugins in Haskell.
