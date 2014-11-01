@@ -1,5 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module System.Nagios.Plugin
 (
@@ -30,14 +31,18 @@ type CheckResult = (CheckStatus, Text)
 
 data PerfValue = RealValue Double | IntegralValue Int64
 
+instance Show PerfValue where
+    show (RealValue x) = show x
+    show (IntegralValue x) = show x
+
 data PerfDatum = PerfDatum
-    { _label :: String
+    { _label :: Text
     , _value :: PerfValue
     , _uom   :: UOM
-    , _min   :: PerfValue
-    , _max   :: PerfValue
-    , _warn  :: PerfValue
-    , _crit  :: PerfValue
+    , _min   :: Maybe PerfValue
+    , _max   :: Maybe PerfValue
+    , _warn  :: Maybe PerfValue
+    , _crit  :: Maybe PerfValue
     }
 
 -- | Current check results/perfdata. If the check suddenly dies, the
@@ -58,6 +63,23 @@ worstResult rs = case (reverse . sort) rs of
     [] -> defaultResult
     (x:_) -> x
 
+fmtPerfData :: [PerfDatum] -> Text
+fmtPerfData = (T.intercalate " ") . map fmtPerfDatum
+  where
+    fmtPerfDatum PerfDatum{..} = T.concat $
+        [ _label
+        , "="
+        , (T.pack . show) _value
+        , (T.pack . show) _uom
+        , fmtThreshold _min
+        , fmtThreshold _max
+        , fmtThreshold _warn
+        , fmtThreshold _crit
+        ]
+
+    fmtThreshold Nothing = ";"
+    fmtThreshold (Just t) = T.pack . concat $ [";", show t]
+
 fmtResults :: [CheckResult] -> Text
 fmtResults = fmtResult . worstResult
   where
@@ -67,10 +89,23 @@ fmtResults = fmtResult . worstResult
         , t
         ]
 
+checkOutput :: NagiosPlugin Text
+checkOutput = do
+    (rs, pds) <- get
+    return . T.concat $
+        [ fmtResults rs
+        , " | "
+        , fmtPerfData pds
+        ]
+
+finalStatus :: NagiosPlugin CheckStatus
+finalStatus = get >>= (return . fst . worstResult) . fst
+
 finish :: NagiosPlugin ()
 finish = do
-    (rs, pds) <- get
-    return ()
+    s <- finalStatus
+    o <- checkOutput
+    liftIO $ exitWithStatus (s, o)
 
 exitWithStatus :: (CheckStatus, Text) -> IO a
 exitWithStatus (OK, t) = putTxt t >> exitWith ExitSuccess
