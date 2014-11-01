@@ -89,23 +89,21 @@ fmtResults = fmtResult . worstResult
         , t
         ]
 
-checkOutput :: NagiosPlugin Text
-checkOutput = do
-    (rs, pds) <- get
-    return . T.concat $
+checkOutput :: CheckState -> Text
+checkOutput (rs, pds) = do
+    T.concat $
         [ fmtResults rs
         , " | "
         , fmtPerfData pds
         ]
 
-finalStatus :: NagiosPlugin CheckStatus
-finalStatus = get >>= (return . fst . worstResult) . fst
+finalStatus :: CheckState -> CheckStatus
+finalStatus = (fst . worstResult) . fst
 
 finish :: NagiosPlugin ()
 finish = do
-    s <- finalStatus
-    o <- checkOutput
-    liftIO $ exitWithStatus (s, o)
+    st <- get
+    liftIO $ exitWithStatus (finalStatus st, checkOutput st)
 
 exitWithStatus :: (CheckStatus, Text) -> IO a
 exitWithStatus (OK, t) = putTxt t >> exitWith ExitSuccess
