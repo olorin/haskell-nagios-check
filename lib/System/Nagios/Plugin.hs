@@ -1,3 +1,5 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module System.Nagios.Plugin
 (
     CheckResult(..),
@@ -39,9 +41,17 @@ data PerfDatum = PerfDatum
 -- | Current check results/perfdata. If the check suddenly dies, the
 --   'worst' of the CheckResults (and all the PerfDatums) will be used
 --   to determine the exit state.
-newtype CheckState = CheckState ([CheckResult], [PerfDatum])
+type CheckState = ([CheckResult], [PerfDatum])
 
-newtype NagiosPlugin a = NagiosPlugin (StateT CheckState IO a)
+newtype NagiosPlugin a = NagiosPlugin
+  {
+    unNagiosPlugin :: StateT CheckState IO a
+  } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState)
+
+finish :: NagiosPlugin ()
+finish = do
+    (rs, pds) <- get
+    return ()
 
 exitWithStatus :: (CheckStatus, Text) -> IO a
 exitWithStatus (OK, t) = putTxt t >> exitWith ExitSuccess
