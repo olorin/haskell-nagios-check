@@ -1,4 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module System.Nagios.Plugin
 (
@@ -25,8 +26,7 @@ instance Show CheckStatus where
     show Critical = "CRITICAL"
     show Unknown = "UNKNOWN"
 
-data CheckResult = CheckResult CheckStatus Text
-  deriving (Ord, Eq, Show)
+type CheckResult = (CheckStatus, Text)
 
 data PerfValue = RealValue Double | IntegralValue Int64
 
@@ -51,12 +51,21 @@ newtype NagiosPlugin a = NagiosPlugin
   } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState)
 
 defaultResult :: CheckResult
-defaultResult = CheckResult Unknown $ T.pack "no check result specified"
+defaultResult = (Unknown, T.pack "no check result specified")
 
 worstResult :: [CheckResult] -> CheckResult
 worstResult rs = case (reverse . sort) rs of
     [] -> defaultResult
     (x:_) -> x
+
+fmtResults :: [CheckResult] -> Text
+fmtResults = fmtResult . worstResult
+  where
+    fmtResult (s,t) = T.concat $
+        [ (T.pack . show) s
+        , ": "
+        , t
+        ]
 
 finish :: NagiosPlugin ()
 finish = do
