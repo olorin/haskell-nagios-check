@@ -8,7 +8,7 @@ module System.Nagios.Plugin
     CheckResult,
     NagiosPlugin,
     runNagiosPlugin,
-    finish
+    addPerfDatum
 ) where
 
 import           Control.Applicative
@@ -50,12 +50,14 @@ checkStatus (CheckResult (s,_)) = s
 checkInfo :: CheckResult -> Text
 checkInfo (CheckResult (_,msg)) = msg
 
+-- | Value of a performance metric.
 data PerfValue = RealValue Double | IntegralValue Int64
 
 instance Show PerfValue where
     show (RealValue x) = show x
     show (IntegralValue x) = show x
 
+-- | One performance metric. A plugin will output zero or more of these.
 data PerfDatum = PerfDatum
     { _label :: Text
     , _value :: PerfValue
@@ -84,6 +86,7 @@ addResult s t = do
     (rs, pds) <- get
     put ((CheckResult (s, t)) : rs, pds)
 
+-- | Insert a performance metric into the list the check will output.
 addPerfDatum ::
     Text ->            -- ^ Name of the quantity being measured.
     PerfValue ->       -- ^ Measured value.
