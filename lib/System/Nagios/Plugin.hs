@@ -4,8 +4,10 @@
 
 module System.Nagios.Plugin
 (
-    CheckResult(..),
+    CheckStatus(..),
+    CheckResult,
     NagiosPlugin,
+    runNagiosPlugin,
     finish
 ) where
 
@@ -38,7 +40,15 @@ instance Show CheckStatus where
     show Critical = "CRITICAL"
     show Unknown = "UNKNOWN"
 
-type CheckResult = (CheckStatus, Text)
+newtype CheckResult = CheckResult
+  { unCheckResult :: (CheckStatus, Text) }
+    deriving (Eq, Ord, Show)
+
+checkStatus :: CheckResult -> CheckStatus
+checkStatus (CheckResult (s,_)) = s
+
+checkInfo :: CheckResult -> Text
+checkInfo (CheckResult (_,msg)) = msg
 
 data PerfValue = RealValue Double | IntegralValue Int64
 
@@ -66,8 +76,32 @@ newtype NagiosPlugin a = NagiosPlugin
     unNagiosPlugin :: StateT CheckState IO a
   } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState)
 
+runNagiosPlugin :: NagiosPlugin a -> IO a
+runNagiosPlugin (NagiosPlugin a) = evalStateT a ([],[])
+
+addResult :: CheckStatus -> Text -> NagiosPlugin ()
+addResult s t = do
+    (rs, pds) <- get
+    put ((CheckResult (s, t)) : rs, pds)
+
+addPerfDatum ::
+    Text ->            -- ^ Name of the quantity being measured.
+    PerfValue ->       -- ^ Measured value.
+    UOM ->             -- ^ Unit of the measured value.
+    Maybe PerfValue -> -- ^ Minimum threshold.
+    Maybe PerfValue -> -- ^ Maximum threshold.
+    Maybe PerfValue -> -- ^ Warning threshold.
+    Maybe PerfValue -> -- ^ Critical threshold.
+    NagiosPlugin ()
+addPerfDatum info val uom min max warn crit =
+    addPerfDatum' $ PerfDatum info val uom min max warn crit
+  where
+    addPerfDatum' pd = do
+        (rs, pds) <- get
+        put (rs, pd : pds)
+
 defaultResult :: CheckResult
-defaultResult = (Unknown, T.pack "no check result specified")
+defaultResult = CheckResult (Unknown, T.pack "no check result specified")
 
 -- | Returns result with greatest badness, or a default UNKNOWN result
 --   if no results have been specified.
@@ -96,7 +130,7 @@ fmtPerfData = (T.intercalate " ") . map fmtPerfDatum
 fmtResults :: [CheckResult] -> Text
 fmtResults = fmtResult . worstResult
   where
-    fmtResult (s,t) = T.concat $
+    fmtResult (CheckResult (s,t)) = T.concat $
         [ (T.pack . show) s
         , ": "
         , t
@@ -110,7 +144,7 @@ checkOutput (rs, pds) = T.concat $
         ]
 
 finalStatus :: CheckState -> CheckStatus
-finalStatus = (fst . worstResult) . fst
+finalStatus = (checkStatus . worstResult) . fst
 
 finish :: NagiosPlugin ()
 finish = do
