@@ -78,9 +78,11 @@ newtype NagiosPlugin a = NagiosPlugin
     unNagiosPlugin :: StateT CheckState IO a
   } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState)
 
-runNagiosPlugin :: NagiosPlugin a -> IO a
-runNagiosPlugin (NagiosPlugin a) = evalStateT a ([],[])
+runNagiosPlugin :: NagiosPlugin a -> IO ()
+runNagiosPlugin (NagiosPlugin a) = evalStateT (a >> finish) ([],[]) >> return ()
 
+-- | Insert a result. Only the 'CheckStatus' with the most 'badness'
+--   will determine the check's exit status.
 addResult :: CheckStatus -> Text -> NagiosPlugin ()
 addResult s t = do
     (rs, pds) <- get
@@ -149,7 +151,9 @@ checkOutput (rs, pds) = T.concat $
 finalStatus :: CheckState -> CheckStatus
 finalStatus = (checkStatus . worstResult) . fst
 
-finish :: NagiosPlugin ()
+-- | Calculate our final result, print output and then exit with the
+--   appropriate status.
+finish :: StateT CheckState IO ()
 finish = do
     st <- get
     liftIO $ exitWithStatus (finalStatus st, checkOutput st)
