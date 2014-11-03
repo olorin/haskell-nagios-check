@@ -137,6 +137,8 @@ worstResult rs = case (reverse . sort) rs of
     [] -> defaultResult
     (x:_) -> x
 
+-- | Render a plugin's performance data according to the
+--   <https://nagios-plugins.org/doc/guidelines.html Nagios plugin development guidelines>.
 fmtPerfData :: [PerfDatum] -> Text
 fmtPerfData = (T.intercalate " ") . map fmtPerfDatum
   where
@@ -154,6 +156,10 @@ fmtPerfData = (T.intercalate " ") . map fmtPerfDatum
     fmtThreshold Nothing = ";"
     fmtThreshold (Just t) = T.pack . concat $ [";", show t]
 
+-- | Render a plugin's result according to the
+--   <https://nagios-plugins.org/doc/guidelines.html Nagios plugin development guidelines>.
+--
+--   FIXME: not actually true yet, need to implement verbose output.
 fmtResults :: [CheckResult] -> Text
 fmtResults = fmtResult . worstResult
   where
@@ -163,6 +169,7 @@ fmtResults = fmtResult . worstResult
         , t
         ]
 
+-- | Render the output of a Nagios check.
 checkOutput :: CheckState -> Text
 checkOutput (rs, pds) = T.concat $
         [ fmtResults rs
@@ -170,6 +177,7 @@ checkOutput (rs, pds) = T.concat $
         , fmtPerfData pds
         ]
 
+-- | Determine the status with which the 'NagiosPlugin' will exit.
 finalStatus :: CheckState -> CheckStatus
 finalStatus = (checkStatus . worstResult) . fst
 
