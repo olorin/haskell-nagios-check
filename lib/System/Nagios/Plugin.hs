@@ -12,7 +12,9 @@ module System.Nagios.Plugin
 ) where
 
 import           Control.Applicative
+import           Control.Exception           (Exception, SomeException)
 import           Control.Monad
+import           Control.Monad.Catch
 import           Control.Monad.State.Lazy
 import           Data.Int
 import           Data.List
@@ -107,6 +109,10 @@ addPerfDatum info val uom min max warn crit =
 
 defaultResult :: CheckResult
 defaultResult = CheckResult (Unknown, T.pack "no check result specified")
+
+panicResult :: Exception e => e -> (CheckStatus, Text)
+panicResult e = (Critical,
+                T.pack ("unhandled exception: " ++ show e))
 
 -- | Returns result with greatest badness, or a default UNKNOWN result
 --   if no results have been specified.
