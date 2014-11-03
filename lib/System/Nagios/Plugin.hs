@@ -8,7 +8,8 @@ module System.Nagios.Plugin
     CheckResult,
     NagiosPlugin,
     runNagiosPlugin,
-    addPerfDatum
+    addPerfDatum,
+    addResult
 ) where
 
 import           Control.Applicative
@@ -56,11 +57,11 @@ newtype CheckResult = CheckResult
 
 -- | Extract the return status from a 'CheckResult'
 checkStatus :: CheckResult -> CheckStatus
-checkStatus (CheckResult (s,_)) = s
+checkStatus = fst . unCheckResult
 
 -- | Extract the infotext from a 'CheckResult'.
 checkInfo :: CheckResult -> Text
-checkInfo (CheckResult (_,msg)) = msg
+checkInfo = snd . unCheckResult
 
 -- | Value of a performance metric.
 data PerfValue = RealValue Double | IntegralValue Int64
