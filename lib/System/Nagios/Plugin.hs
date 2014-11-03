@@ -42,13 +42,23 @@ instance Show CheckStatus where
     show Critical = "CRITICAL"
     show Unknown = "UNKNOWN"
 
+-- | A CheckResult is the exit status of the plugin combined with the
+--   plugin's info text. A `NagiosPlugin` which exits with
+--
+--   > CheckResult (Critical "entropy decreasing in closed system")
+--
+--   as its peak-badness CheckResult (and no 'PerfDatum's) will a) exit with
+--   status 2 and b) output the text "CRITICAL: entropy decreasing in closed
+--   system".
 newtype CheckResult = CheckResult
   { unCheckResult :: (CheckStatus, Text) }
     deriving (Eq, Ord, Show)
 
+-- | Extract the return status from a 'CheckResult'
 checkStatus :: CheckResult -> CheckStatus
 checkStatus (CheckResult (s,_)) = s
 
+-- | Extract the infotext from a 'CheckResult'.
 checkInfo :: CheckResult -> Text
 checkInfo (CheckResult (_,msg)) = msg
 
@@ -80,8 +90,10 @@ newtype NagiosPlugin a = NagiosPlugin
     unNagiosPlugin :: StateT CheckState IO a
   } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState)
 
-runNagiosPlugin :: NagiosPlugin a -> IO ()
-runNagiosPlugin (NagiosPlugin a) = evalStateT (a >> finish) ([],[]) >> return ()
+-- | Execute a Nagios check. The program will terminate at the check's
+--   completion.
+runNagiosPlugin :: NagiosPlugin check -> IO ()
+runNagiosPlugin (NagiosPlugin check) = evalStateT (check >> finish) ([],[]) >> return ()
 
 -- | Insert a result. Only the 'CheckStatus' with the most 'badness'
 --   will determine the check's exit status.
@@ -107,9 +119,13 @@ addPerfDatum info val uom min max warn crit =
         (rs, pds) <- get
         put (rs, pd : pds)
 
+-- | The result which will be used if no other results have been
+--   provided.
 defaultResult :: CheckResult
 defaultResult = CheckResult (Unknown, T.pack "no check result specified")
 
+-- | The result which will be used if an exception is thrown and not caught
+--   within the plugin.
 panicResult :: Exception e => e -> (CheckStatus, Text)
 panicResult e = (Critical,
                 T.pack ("unhandled exception: " ++ show e))
