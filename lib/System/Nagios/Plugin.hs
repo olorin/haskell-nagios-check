@@ -6,9 +6,12 @@ module System.Nagios.Plugin
 (
     CheckStatus(..),
     CheckResult,
+    UOM(..),
+    PerfValue(..),
     NagiosPlugin,
     runNagiosPlugin,
-    addPerfDatum
+    addPerfDatum,
+    addResult,
 ) where
 
 import           Control.Applicative
@@ -16,7 +19,7 @@ import           Control.Monad
 import           Control.Monad.State.Lazy
 import           Data.Int
 import           Data.List
-import           Data.Nagios.Perfdata.Metric (UOM)
+import           Data.Nagios.Perfdata.Metric (UOM(..))
 import           Data.Text                   (Text)
 import qualified Data.Text                   as T
 import           System.Exit
