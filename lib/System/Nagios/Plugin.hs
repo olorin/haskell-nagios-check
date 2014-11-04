@@ -1,27 +1,33 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE RecordWildCards            #-}
+{-# LANGUAGE TupleSections              #-}
 
 module System.Nagios.Plugin
 (
     CheckStatus(..),
     CheckResult,
+    UOM(..),
+    PerfValue(..),
     NagiosPlugin,
     runNagiosPlugin,
+    runNagiosPlugin',
     addPerfDatum,
-    addResult
+    addResult,
+    checkStatus,
+    checkInfo,
 ) where
 
 import           Control.Applicative
-import           Control.Exception           (Exception, SomeException)
-import           Control.Monad
 import           Control.Monad.Catch
 import           Control.Monad.State.Lazy
+import           Data.Bifunctor
 import           Data.Int
-import           Data.List
-import           Data.Nagios.Perfdata.Metric (UOM)
+import           Data.Monoid
+import           Data.Nagios.Perfdata.Metric (UOM (..))
 import           Data.Text                   (Text)
 import qualified Data.Text                   as T
+import qualified Data.Text.IO                as T
 import           System.Exit
 
 -- | Nagios plugin exit statuses. Ordered by priority -
@@ -65,6 +71,7 @@ checkInfo = snd . unCheckResult
 
 -- | Value of a performance metric.
 data PerfValue = RealValue Double | IntegralValue Int64
+  deriving Eq
 
 instance Show PerfValue where
     show (RealValue x) = show x
@@ -80,6 +87,7 @@ data PerfDatum = PerfDatum
     , _warn  :: Maybe PerfValue
     , _crit  :: Maybe PerfValue
     }
+  deriving (Eq, Show)
 
 -- | Current check results/perfdata. If the check suddenly dies, the
 --   'worst' of the CheckResults (and all the PerfDatums) will be used
@@ -92,21 +100,23 @@ newtype NagiosPlugin a = NagiosPlugin
   } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState, MonadCatch, MonadThrow)
 
 -- | Execute a Nagios check. The program will terminate at the check's
---   completion.
+--   completion. A default status will provided if none is given.
 runNagiosPlugin :: NagiosPlugin a -> IO ()
-runNagiosPlugin check = runNagiosPlugin' (catch check panic)
+runNagiosPlugin check = do
+    (_, st) <- runNagiosPlugin' $ catch check panic
+    finishWith st
   where
-    runNagiosPlugin' (NagiosPlugin check') =  evalStateT (check' >> finish) ([],[])
-
     panic :: SomeException -> NagiosPlugin a
-    panic e = liftIO $ finishWith $ panicState e
+    panic = liftIO . finishWith . panicState
+
+runNagiosPlugin' :: NagiosPlugin a -> IO (a, CheckState)
+runNagiosPlugin' a = runStateT (unNagiosPlugin a) mempty
 
 -- | Insert a result. Only the 'CheckStatus' with the most 'badness'
 --   will determine the check's exit status.
 addResult :: CheckStatus -> Text -> NagiosPlugin ()
-addResult s t = do
-    (rs, pds) <- get
-    put ((CheckResult (s, t)) : rs, pds)
+addResult s t =
+    modify (first (CheckResult (s, t) :))
 
 -- | Insert a performance metric into the list the check will output.
 addPerfDatum ::
@@ -118,8 +128,8 @@ addPerfDatum ::
     Maybe PerfValue -> -- ^ Warning threshold.
     Maybe PerfValue -> -- ^ Critical threshold.
     NagiosPlugin ()
-addPerfDatum info val uom min max warn crit =
-    addPerfDatum' $ PerfDatum info val uom min max warn crit
+addPerfDatum info val uom min' max' warn crit =
+    addPerfDatum' $ PerfDatum info val uom min' max' warn crit
   where
     addPerfDatum' pd = do
         (rs, pds) <- get
@@ -133,7 +143,7 @@ defaultResult = CheckResult (Unknown, T.pack "no check result specified")
 -- | The state the plugin will exit with if an uncaught exception occurs.
 --   within the plugin.
 panicState :: SomeException -> CheckState
-panicState = (flip (,) []) . (flip (:) []) . CheckResult . panicResult
+panicState = (,[]) . return . CheckResult . panicResult
   where
     panicResult e = (Critical,
                     T.pack ("unhandled exception: " ++ show e))
@@ -141,20 +151,20 @@ panicState = (flip (,) []) . (flip (:) []) . CheckResult . panicResult
 -- | Returns result with greatest badness, or a default UNKNOWN result
 --   if no results have been specified.
 worstResult :: [CheckResult] -> CheckResult
-worstResult rs = case (reverse . sort) rs of
-    [] -> defaultResult
-    (x:_) -> x
+worstResult rs
+    | null rs = defaultResult
+    | otherwise = maximum rs
 
 -- | Render a plugin's performance data according to the
 --   <https://nagios-plugins.org/doc/guidelines.html Nagios plugin development guidelines>.
 fmtPerfData :: [PerfDatum] -> Text
-fmtPerfData = (T.intercalate " ") . map fmtPerfDatum
+fmtPerfData = T.intercalate " " . map fmtPerfDatum
   where
-    fmtPerfDatum PerfDatum{..} = T.concat $
+    fmtPerfDatum PerfDatum{..} = T.concat
         [ _label
         , "="
-        , (T.pack . show) _value
-        , (T.pack . show) _uom
+        , T.pack (show _value)
+        , T.pack (show _uom)
         , fmtThreshold _min
         , fmtThreshold _max
         , fmtThreshold _warn
@@ -162,7 +172,7 @@ fmtPerfData = (T.intercalate " ") . map fmtPerfDatum
         ]
 
     fmtThreshold Nothing = ";"
-    fmtThreshold (Just t) = T.pack . concat $ [";", show t]
+    fmtThreshold (Just t) = T.pack $ ";" <> show t
 
 -- | Render a plugin's result according to the
 --   <https://nagios-plugins.org/doc/guidelines.html Nagios plugin development guidelines>.
@@ -171,35 +181,17 @@ fmtPerfData = (T.intercalate " ") . map fmtPerfDatum
 fmtResults :: [CheckResult] -> Text
 fmtResults = fmtResult . worstResult
   where
-    fmtResult (CheckResult (s,t)) = T.concat $
-        [ (T.pack . show) s
-        , ": "
-        , t
-        ]
-
--- | Render the output of a Nagios check.
-checkOutput :: CheckState -> Text
-checkOutput (rs, pds) = T.concat $
-        [ fmtResults rs
-        , " | "
-        , fmtPerfData pds
-        ]
-
--- | Determine the status with which the 'NagiosPlugin' will exit.
-finalStatus :: CheckState -> CheckStatus
-finalStatus = (checkStatus . worstResult) . fst
+    fmtResult (CheckResult (s,t)) =
+        T.pack (show s) <> ": " <> t
 
 -- | Calculate our final result, print output and then exit with the
 --   appropriate status.
-finish :: StateT CheckState IO ()
-finish = get >>= finishWith
-
-finishWith st =
-    liftIO $ exitWithStatus (finalStatus st, checkOutput st)
+finishWith :: MonadIO m => CheckState -> m a
+finishWith (rs, pds) =
+    let worst = worstResult rs
+        output = fmtResults rs <> " | " <> fmtPerfData pds
+    in liftIO $ exitWithStatus (checkStatus worst, output)
 
 exitWithStatus :: (CheckStatus, Text) -> IO a
-exitWithStatus (OK, t) = putTxt t >> exitWith ExitSuccess
-exitWithStatus (r, t) = putTxt t >> exitWith (ExitFailure $ fromEnum r)
-
-putTxt :: Text -> IO ()
-putTxt = (putStrLn . T.unpack)
+exitWithStatus (OK, t) = T.putStrLn t >> exitSuccess
+exitWithStatus (r, t) = T.putStrLn t >> exitWith (ExitFailure $ fromEnum r)
