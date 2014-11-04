@@ -11,6 +11,7 @@ module System.Nagios.Plugin
     PerfValue(..),
     NagiosPlugin,
     runNagiosPlugin,
+    runNagiosPlugin',
     addPerfDatum,
     addResult,
     checkStatus,
@@ -70,6 +71,7 @@ checkInfo = snd . unCheckResult
 
 -- | Value of a performance metric.
 data PerfValue = RealValue Double | IntegralValue Int64
+  deriving Eq
 
 instance Show PerfValue where
     show (RealValue x) = show x
@@ -85,6 +87,7 @@ data PerfDatum = PerfDatum
     , _warn  :: Maybe PerfValue
     , _crit  :: Maybe PerfValue
     }
+  deriving (Eq, Show)
 
 -- | Current check results/perfdata. If the check suddenly dies, the
 --   'worst' of the CheckResults (and all the PerfDatums) will be used
