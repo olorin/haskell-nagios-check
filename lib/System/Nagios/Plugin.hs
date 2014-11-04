@@ -89,12 +89,17 @@ type CheckState = ([CheckResult], [PerfDatum])
 newtype NagiosPlugin a = NagiosPlugin
   {
     unNagiosPlugin :: StateT CheckState IO a
-  } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState)
+  } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState, MonadCatch, MonadThrow)
 
 -- | Execute a Nagios check. The program will terminate at the check's
 --   completion.
-runNagiosPlugin :: NagiosPlugin check -> IO ()
-runNagiosPlugin (NagiosPlugin check) = evalStateT (check >> finish) ([],[]) >> return ()
+runNagiosPlugin :: NagiosPlugin a -> IO ()
+runNagiosPlugin check = runNagiosPlugin' (catch check panic)
+  where
+    runNagiosPlugin' (NagiosPlugin check') =  evalStateT (check' >> finish) ([],[])
+
+    panic :: SomeException -> NagiosPlugin a
+    panic e = liftIO $ finishWith $ panicState e
 
 -- | Insert a result. Only the 'CheckStatus' with the most 'badness'
 --   will determine the check's exit status.
@@ -125,11 +130,13 @@ addPerfDatum info val uom min max warn crit =
 defaultResult :: CheckResult
 defaultResult = CheckResult (Unknown, T.pack "no check result specified")
 
--- | The result which will be used if an exception is thrown and not caught
+-- | The state the plugin will exit with if an uncaught exception occurs.
 --   within the plugin.
-panicResult :: Exception e => e -> (CheckStatus, Text)
-panicResult e = (Critical,
-                T.pack ("unhandled exception: " ++ show e))
+panicState :: SomeException -> CheckState
+panicState = (flip (,) []) . (flip (:) []) . CheckResult . panicResult
+  where
+    panicResult e = (Critical,
+                    T.pack ("unhandled exception: " ++ show e))
 
 -- | Returns result with greatest badness, or a default UNKNOWN result
 --   if no results have been specified.
@@ -185,8 +192,9 @@ finalStatus = (checkStatus . worstResult) . fst
 -- | Calculate our final result, print output and then exit with the
 --   appropriate status.
 finish :: StateT CheckState IO ()
-finish = do
-    st <- get
+finish = get >>= finishWith
+
+finishWith st =
     liftIO $ exitWithStatus (finalStatus st, checkOutput st)
 
 exitWithStatus :: (CheckStatus, Text) -> IO a

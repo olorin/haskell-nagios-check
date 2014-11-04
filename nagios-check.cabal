@@ -24,3 +24,6 @@ library
                        nagios-perfdata
   hs-source-dirs:      lib
   default-language:    Haskell2010
+  ghc-options:         -Wall
+                       -Wwarn
+                       -fwarn-tabs
