@@ -97,14 +97,17 @@ newtype NagiosPlugin a = NagiosPlugin
   } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState, MonadCatch, MonadThrow)
 
 -- | Execute a Nagios check. The program will terminate at the check's
---   completion.
+--   completion. A default status will provided if none is given.
 runNagiosPlugin :: NagiosPlugin a -> IO ()
-runNagiosPlugin check = runNagiosPlugin' (catch check panic)
+runNagiosPlugin check = do
+    (_, st) <- runNagiosPlugin' $ catch check panic
+    finishWith st
   where
-    runNagiosPlugin' a = evalStateT (unNagiosPlugin a >> finish) ([],[])
-
     panic :: SomeException -> NagiosPlugin a
     panic = liftIO . finishWith . panicState
+
+runNagiosPlugin' :: NagiosPlugin a -> IO (a, CheckState)
+runNagiosPlugin' a = runStateT (unNagiosPlugin a) mempty
 
 -- | Insert a result. Only the 'CheckStatus' with the most 'badness'
 --   will determine the check's exit status.
@@ -178,23 +181,13 @@ fmtResults = fmtResult . worstResult
     fmtResult (CheckResult (s,t)) =
         T.pack (show s) <> ": " <> t
 
--- | Render the output of a Nagios check.
-checkOutput :: CheckState -> Text
-checkOutput (rs, pds) =
-    fmtResults rs <> " | " <> fmtPerfData pds
-
--- | Determine the status with which the 'NagiosPlugin' will exit.
-finalStatus :: CheckState -> CheckStatus
-finalStatus = (checkStatus . worstResult) . fst
-
 -- | Calculate our final result, print output and then exit with the
 --   appropriate status.
-finish :: StateT CheckState IO ()
-finish = get >>= finishWith
-
 finishWith :: MonadIO m => CheckState -> m a
-finishWith st =
-    liftIO $ exitWithStatus (finalStatus st, checkOutput st)
+finishWith (rs, pds) =
+    let worst = worstResult rs
+        output = fmtResults rs <> " | " <> fmtPerfData pds
+    in liftIO $ exitWithStatus (checkStatus worst, output)
 
 exitWithStatus :: (CheckStatus, Text) -> IO a
 exitWithStatus (OK, t) = T.putStrLn t >> exitSuccess
