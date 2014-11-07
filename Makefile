@@ -6,6 +6,8 @@ build: dist/setup-config tags
 	@/bin/echo -e "CABAL\tbuild"
 	cabal build
 
+check: test
+
 test: dist/setup-config tags
 	@/bin/echo -e "CABAL\ttest"
 	cabal test
