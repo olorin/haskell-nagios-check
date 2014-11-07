@@ -16,11 +16,13 @@ suite = describe "runNagiosPlugin'" $ do
         (_,(rs,pds)) <- runNagiosPlugin' (return ())
         pds `shouldBe` []
         checkInfo (worstResult rs) `shouldBe` "no check result specified"
+        checkStatus (worstResult rs) `shouldBe` Unknown
 
     it "returns explicitly added result in favor of default" $ do
         (_,(rs,pds)) <- runNagiosPlugin' (universeCheck pi)
         pds `shouldBe` []
         checkInfo (worstResult rs) `shouldBe` universeGoodResult
+        checkStatus (worstResult rs) `shouldBe` OK
 
 universeCheck :: Double -> NagiosPlugin ()
 universeCheck pi' = do
