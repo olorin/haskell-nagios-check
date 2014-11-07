@@ -2,6 +2,7 @@
 
 module Main where
 
+import           Data.Monoid
 import           Data.Text            (Text)
 import           Test.Hspec
 
@@ -13,22 +14,19 @@ main = hspec suite
 suite :: Spec
 suite = describe "runNagiosPlugin'" $ do
     it "returns default result if no results are specified" $ do
-        (_,(rs,pds)) <- runNagiosPlugin' (return ())
-        pds `shouldBe` []
-        checkInfo (worstResult rs) `shouldBe` "no check result specified"
-        checkStatus (worstResult rs) `shouldBe` Unknown
+        (_,s) <- runNagiosPlugin' (return ())
+        snd (finishState s) `shouldBe` "UNKNOWN: no check result specified"
+        fst (finishState s) `shouldBe` Unknown
 
     it "returns explicitly added result in favor of default" $ do
-        (_,(rs,pds)) <- runNagiosPlugin' (universeCheck pi)
-        pds `shouldBe` []
-        checkInfo (worstResult rs) `shouldBe` universeGoodResult
-        checkStatus (worstResult rs) `shouldBe` OK
+        (_,s) <- runNagiosPlugin' (universeCheck pi)
+        snd (finishState s) `shouldBe` ("OK: " <> universeGoodResult)
+        fst (finishState s) `shouldBe` OK
 
     it "returns result with greatest badness" $ do
-        (_,(rs,pds)) <- runNagiosPlugin' (universeCheck 1.0)
-        pds `shouldBe` []
-        checkInfo (worstResult rs) `shouldBe` universeBadResult
-        checkStatus (worstResult rs) `shouldBe` Critical
+        (_,s) <- runNagiosPlugin' (universeCheck 1.0)
+        snd (finishState s) `shouldBe` ("CRITICAL: " <> universeBadResult)
+        fst (finishState s) `shouldBe` Critical
 
 
 universeCheck :: Double -> NagiosPlugin ()
