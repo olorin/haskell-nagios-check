@@ -199,8 +199,11 @@ fmtResults = fmtResult . worstResult
 finishState :: CheckState -> (CheckStatus, Text)
 finishState (rs, pds) =
     let worst  = worstResult rs
-        output = fmtResults rs <> " | " <> fmtPerfData pds
+        output = fmtResults rs <> perfdataPart pds
     in (checkStatus worst, output)
+  where
+    perfdataPart [] = ""
+    perfdataPart xs = " | " <> fmtPerfData xs
 
 -- | Calculate our final result, print output and then exit with the
 --   appropriate status.
