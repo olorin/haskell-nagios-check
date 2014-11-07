@@ -34,13 +34,13 @@ import           System.Exit
 -- | Nagios plugin exit statuses. Ordered by priority -
 --   OK < Warning < Critical < Unknown, which correspond to plugin exit
 --   statuses of 0, 1, 2, and 3 respectively.
-data CheckStatus = OK       -- | Check executed successfully and
+data CheckStatus = OK       -- ^ Check executed successfully and
                             --   detected no service problems.
-                 | Warning  -- | Nothing's actually broken but this
+                 | Warning  -- ^ Nothing's actually broken but this
                             --   should be followed up.
-                 | Critical -- | Check executed successfully and detected
+                 | Critical -- ^ Check executed successfully and detected
                             --   a service failure.
-                 | Unknown  -- | Check unable to determine service
+                 | Unknown  -- ^ Check unable to determine service
                             --   status.
   deriving (Enum, Eq, Ord)
 
@@ -123,14 +123,14 @@ addResult s t =
 
 -- | Insert a performance metric into the list the check will output.
 addPerfDatum ::
-    Text ->            -- ^ Name of the quantity being measured.
-    PerfValue ->       -- ^ Measured value.
-    UOM ->             -- ^ Unit of the measured value.
-    Maybe PerfValue -> -- ^ Minimum threshold.
-    Maybe PerfValue -> -- ^ Maximum threshold.
-    Maybe PerfValue -> -- ^ Warning threshold.
-    Maybe PerfValue -> -- ^ Critical threshold.
-    NagiosPlugin ()
+       Text            -- ^ Name of the quantity being measured.
+    -> PerfValue       -- ^ Measured value.
+    -> UOM             -- ^ Unit of the measured value.
+    -> Maybe PerfValue -- ^ Minimum threshold.
+    -> Maybe PerfValue -- ^ Maximum threshold.
+    -> Maybe PerfValue -- ^ Warning threshold.
+    -> Maybe PerfValue -- ^ Critical threshold.
+    -> NagiosPlugin ()
 addPerfDatum info val uom min' max' warn crit =
     addPerfDatum' $ PerfDatum info val uom min' max' warn crit
   where
