@@ -17,7 +17,8 @@ module System.Nagios.Plugin
     checkStatus,
     checkInfo,
     worstResult,
-    PerfDatum
+    PerfDatum,
+    finishState
 ) where
 
 import           Control.Applicative
@@ -193,13 +194,18 @@ fmtResults = fmtResult . worstResult
     fmtResult (CheckResult (s,t)) =
         T.pack (show s) <> ": " <> t
 
+-- | Given a check's final state, return the status and output it would
+--   exit with.
+finishState :: CheckState -> (CheckStatus, Text)
+finishState (rs, pds) =
+    let worst  = worstResult rs
+        output = fmtResults rs <> " | " <> fmtPerfData pds
+    in (checkStatus worst, output)
+
 -- | Calculate our final result, print output and then exit with the
 --   appropriate status.
 finishWith :: MonadIO m => CheckState -> m a
-finishWith (rs, pds) =
-    let worst = worstResult rs
-        output = fmtResults rs <> " | " <> fmtPerfData pds
-    in liftIO $ exitWithStatus (checkStatus worst, output)
+finishWith = liftIO . exitWithStatus . finishState
 
 -- | Output the final check result to stdout and then terminate the
 --   check program with the appropriate exit status.
