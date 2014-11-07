@@ -11,11 +11,16 @@ main :: IO ()
 main = hspec suite
 
 suite :: Spec
-suite = describe "runNagiosPlugin'" $ it
-    "returns explicitly added result in favor of default" $ do
+suite = describe "runNagiosPlugin'" $ do
+    it "returns default result if no results are specified" $ do
+        (_,(rs,pds)) <- runNagiosPlugin' (return ())
+        pds `shouldBe` []
+        checkInfo (worstResult rs) `shouldBe` "no check result specified"
+
+    it "returns explicitly added result in favor of default" $ do
         (_,(rs,pds)) <- runNagiosPlugin' (universeCheck pi)
         pds `shouldBe` []
-        checkInfo (maximum rs) `shouldBe` universeGoodResult
+        checkInfo (worstResult rs) `shouldBe` universeGoodResult
 
 universeCheck :: Double -> NagiosPlugin ()
 universeCheck pi' = do
