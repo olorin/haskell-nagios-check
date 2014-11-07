@@ -2,10 +2,10 @@
 
 module Main where
 
-import Data.Text (Text)
-import Test.Hspec
+import           Data.Text            (Text)
+import           Test.Hspec
 
-import System.Nagios.Plugin
+import           System.Nagios.Plugin
 
 main :: IO ()
 main = hspec suite
