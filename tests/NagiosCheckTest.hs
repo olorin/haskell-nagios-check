@@ -24,6 +24,13 @@ suite = describe "runNagiosPlugin'" $ do
         checkInfo (worstResult rs) `shouldBe` universeGoodResult
         checkStatus (worstResult rs) `shouldBe` OK
 
+    it "returns result with greatest badness" $ do
+        (_,(rs,pds)) <- runNagiosPlugin' (universeCheck 1.0)
+        pds `shouldBe` []
+        checkInfo (worstResult rs) `shouldBe` universeBadResult
+        checkStatus (worstResult rs) `shouldBe` Critical
+
+
 universeCheck :: Double -> NagiosPlugin ()
 universeCheck pi' = do
     addResult OK universeGoodResult
