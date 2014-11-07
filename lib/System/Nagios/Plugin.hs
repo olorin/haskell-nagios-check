@@ -16,7 +16,8 @@ module System.Nagios.Plugin
     addResult,
     checkStatus,
     checkInfo,
-    worstResult
+    worstResult,
+    PerfDatum
 ) where
 
 import           Control.Applicative
