@@ -109,6 +109,8 @@ runNagiosPlugin check = do
     panic :: SomeException -> NagiosPlugin a
     panic = liftIO . finishWith . panicState
 
+-- | Execute a Nagios check as with 'runNagiosPlugin', but return its
+--   final state rather than terminating.
 runNagiosPlugin' :: NagiosPlugin a -> IO (a, CheckState)
 runNagiosPlugin' a = runStateT (unNagiosPlugin a) mempty
 
@@ -192,6 +194,8 @@ finishWith (rs, pds) =
         output = fmtResults rs <> " | " <> fmtPerfData pds
     in liftIO $ exitWithStatus (checkStatus worst, output)
 
+-- | Output the final check result to stdout and then terminate the
+--   check program with the appropriate exit status.
 exitWithStatus :: (CheckStatus, Text) -> IO a
 exitWithStatus (OK, t) = T.putStrLn t >> exitSuccess
 exitWithStatus (r, t) = T.putStrLn t >> exitWith (ExitFailure $ fromEnum r)
