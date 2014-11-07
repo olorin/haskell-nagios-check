@@ -37,4 +37,5 @@ test-suite nagios-check-test
   build-depends:       base >=4.7 && <5,
                        hspec,
                        QuickCheck,
+                       text,
                        nagios-check
