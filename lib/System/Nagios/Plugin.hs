@@ -215,3 +215,9 @@ finishWith = liftIO . exitWithStatus . finishState
 exitWithStatus :: (CheckStatus, Text) -> IO a
 exitWithStatus (OK, t) = T.putStrLn t >> exitSuccess
 exitWithStatus (r, t) = T.putStrLn t >> exitWith (ExitFailure $ fromEnum r)
+
+-- | A 'Range' is a combination of a lower boundary and an upper boundary (x,y).
+--   An 'AcceptableRange' asserts that measured values between x and y
+--   imply that nothing is wrong; an UnacceptableRange implies the inverse.
+data Range = AcceptableRange PerfValue PerfValue
+           | UnacceptableRange PerfValue PerfValue
