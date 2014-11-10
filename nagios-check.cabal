@@ -15,6 +15,10 @@ build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
 
+source-repository    head
+  type:              git 
+  location:          git@github.com:fractalcat/nagios-check.git
+
 library
   exposed-modules:     System.Nagios.Plugin
   build-depends:       base >=4.7 && <5,
