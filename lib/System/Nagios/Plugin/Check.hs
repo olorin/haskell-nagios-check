@@ -13,6 +13,7 @@ module System.Nagios.Plugin.Check
     runNagiosPlugin,
     runNagiosPlugin',
     addPerfDatum,
+    addBarePerfDatum,
     addResult,
     checkStatus,
     checkInfo,
@@ -139,11 +140,23 @@ addPerfDatum ::
     -> Maybe PerfValue -- ^ Critical threshold.
     -> NagiosPlugin ()
 addPerfDatum info val uom min' max' warn crit =
-    addPerfDatum' $ PerfDatum info val uom min' max' warn crit
-  where
-    addPerfDatum' pd = do
-        (rs, pds) <- get
-        put (rs, pd : pds)
+    modify (second (PerfDatum info val uom min' max' warn crit :))
+
+-- | Convenience function to insert a perfdatum without thresholds for
+--   min, max, warn or crit. Note that unless the range of the metric is
+--   actually unbounded, specifying explicit thresholds is considered
+--   good practice (it makes life easier for authors of graphing
+--   packages).
+--
+--   FIXME: implement thresholds properly and default to negative and
+--          positive infinity for min and max here.
+addBarePerfDatum ::
+       Text            -- ^ Name of the quantity being measured.
+    -> PerfValue       -- ^ Measured value.
+    -> UOM             -- ^ Unit of the measured value.
+    -> NagiosPlugin ()
+addBarePerfDatum info val uom =
+    addPerfDatum info val uom Nothing Nothing Nothing Nothing
 
 -- | The result which will be used if no other results have been
 --   provided.
