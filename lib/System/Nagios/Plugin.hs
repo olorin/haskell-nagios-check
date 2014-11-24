@@ -13,6 +13,7 @@ module System.Nagios.Plugin
     runNagiosPlugin,
     runNagiosPlugin',
     addPerfDatum,
+    addPerfDatum',
     addResult,
     checkStatus,
     checkInfo,
@@ -118,7 +119,8 @@ addResult :: CheckStatus -> Text -> NagiosPlugin ()
 addResult s t =
     modify (first (CheckResult (s, t) :))
 
--- | Insert a performance metric into the list the check will output.
+-- | Insert a monitored performance metric into the list the check will output with
+-- checking of minimum, warning and critical thresholds.
 addPerfDatum ::
     Text ->            -- ^ Name of the quantity being measured.
     PerfValue ->       -- ^ Measured value.
@@ -129,11 +131,16 @@ addPerfDatum ::
     Maybe PerfValue -> -- ^ Critical threshold.
     NagiosPlugin ()
 addPerfDatum info val uom min' max' warn crit =
-    addPerfDatum' $ PerfDatum info val uom min' max' warn crit
-  where
-    addPerfDatum' pd = do
-        (rs, pds) <- get
-        put (rs, pd : pds)
+    modify (second (PerfDatum info val uom min' max' warn crit :))
+
+-- | Insert an informative performance metric into the list the check will output.
+addPerfDatum' ::
+    Text ->            -- ^ Name of the quantity being measured.
+    PerfValue ->       -- ^ Measured value.
+    UOM ->             -- ^ Unit of the measured value.
+    NagiosPlugin ()
+addPerfDatum' info val uom =
+    addPerfDatum info val uom Nothing Nothing Nothing Nothing
 
 -- | The result which will be used if no other results have been
 --   provided.
