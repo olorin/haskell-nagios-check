@@ -140,11 +140,7 @@ addPerfDatum ::
     -> Maybe PerfValue -- ^ Critical threshold.
     -> NagiosPlugin ()
 addPerfDatum info val uom min' max' warn crit =
-    addPerfDatum' $ PerfDatum info val uom min' max' warn crit
-  where
-    addPerfDatum' pd = do
-        (rs, pds) <- get
-        put (rs, pd : pds)
+    modify (second (PerfDatum info val uom min' max' warn crit :))
 
 -- | Convenience function to insert a perfdatum without thresholds for
 --   min, max, warn or crit. Note that unless the range of the metric is
