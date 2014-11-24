@@ -35,7 +35,7 @@ import qualified Data.Text.IO                as T
 import           System.Exit
 
 -- | Nagios plugin exit statuses. Ordered by priority -
---   OK < Warning < Critical < Unknown, which correspond to plugin exit
+--   'OK' < 'Warning' < 'Critical' < 'Unknown', which correspond to plugin exit
 --   statuses of 0, 1, 2, and 3 respectively.
 data CheckStatus = OK       -- ^ Check executed successfully and
                             --   detected no service problems.
@@ -65,7 +65,7 @@ newtype CheckResult = CheckResult
   { unCheckResult :: (CheckStatus, Text) }
     deriving (Eq, Ord, Show)
 
--- | Extract the return status from a 'CheckResult'
+-- | Extract the return status from a 'CheckResult'.
 checkStatus :: CheckResult -> CheckStatus
 checkStatus = fst . unCheckResult
 
