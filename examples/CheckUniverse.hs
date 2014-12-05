@@ -1,10 +1,3 @@
-# nagios-check
-
-Write Nagios (or Icinga, Shinken, et cetera) plugins in Haskell.
-
-## Example usage
-
-```haskell
 {-# LANGUAGE OverloadedStrings #-}
 
 import System.Nagios.Plugin
@@ -16,4 +9,3 @@ universeCheck pi' = do
 
 main :: IO ()
 main = runNagiosPlugin (universeCheck 3.1415)
-```
