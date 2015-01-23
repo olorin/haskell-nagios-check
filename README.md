@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/fractalcat/nagios-check.svg?branch=master)](https://travis-ci.org/fractalcat/nagios-check)
+
 # nagios-check
 
 Write Nagios (or Icinga, Shinken, et cetera) plugins in Haskell.
