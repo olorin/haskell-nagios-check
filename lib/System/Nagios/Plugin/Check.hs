@@ -23,7 +23,7 @@ module System.Nagios.Plugin.Check
 ) where
 
 import           Control.Applicative
-import           Control.Monad.Catch
+import qualified Control.Monad.Catch as E
 import           Control.Monad.State.Lazy
 import           Data.Bifunctor
 import           Data.Int
@@ -106,16 +106,16 @@ type CheckState = ([CheckResult], [PerfDatum])
 newtype NagiosPlugin a = NagiosPlugin
   {
     unNagiosPlugin :: StateT CheckState IO a
-  } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState, MonadCatch, MonadThrow)
+  } deriving (Functor, Applicative, Monad, MonadIO, MonadState CheckState, E.MonadCatch, E.MonadThrow)
 
 -- | Execute a Nagios check. The program will terminate at the check's
 --   completion. A default status will provided if none is given.
 runNagiosPlugin :: NagiosPlugin a -> IO ()
 runNagiosPlugin check = do
-    (_, st) <- runNagiosPlugin' $ catch check panic
+    (_, st) <- runNagiosPlugin' $ E.catch check panic
     finishWith st
   where
-    panic :: SomeException -> NagiosPlugin a
+    panic :: E.SomeException -> NagiosPlugin a
     panic = liftIO . finishWith . panicState
 
 -- | Execute a Nagios check as with 'runNagiosPlugin', but return its
@@ -165,7 +165,7 @@ defaultResult = CheckResult (Unknown, T.pack "no check result specified")
 
 -- | The state the plugin will exit with if an uncaught exception occurs.
 --   within the plugin.
-panicState :: SomeException -> CheckState
+panicState :: E.SomeException -> CheckState
 panicState = (,[]) . return . CheckResult . panicResult
   where
     panicResult e = (Critical,
