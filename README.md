@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/fractalcat/nagios-check.svg?branch=master)](https://travis-ci.org/fractalcat/nagios-check)
+[![Build Status](https://travis-ci.org/fractalcat/haskell-nagios-check.svg?branch=master)](https://travis-ci.org/fractalcat/haskell-nagios-check)
 
 # nagios-check
 
