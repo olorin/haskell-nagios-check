@@ -75,7 +75,7 @@ checkInfo = snd . unCheckResult
 
 -- | Value of a performance metric.
 data PerfValue = RealValue Double | IntegralValue Int64
-  deriving Eq
+  deriving (Eq, Ord)
 
 instance Show PerfValue where
     show (RealValue x) = show x
