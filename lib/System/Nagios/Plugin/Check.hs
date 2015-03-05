@@ -188,10 +188,10 @@ fmtPerfData = T.intercalate " " . map fmtPerfDatum
         , "="
         , T.pack (show _value)
         , T.pack (show _uom)
-        , fmtThreshold _min
-        , fmtThreshold _max
         , fmtThreshold _warn
         , fmtThreshold _crit
+        , fmtThreshold _min
+        , fmtThreshold _max
         ]
 
     fmtThreshold Nothing = ";"
