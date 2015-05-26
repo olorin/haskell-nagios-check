@@ -7,12 +7,14 @@ module System.Nagios.Plugin.PerfData
 (
     UOM(..),
     PerfValue(..),
-    PerfDatum(..)
+    PerfDatum(..),
+    ToPerfData,
+    toPerfData
 ) where
 
 import           Data.Int
-import           Data.Text (Text)
 import           Data.Nagios.Perfdata.Metric (UOM (..))
+import           Data.Text                   (Text)
 
 -- | Value of a performance metric.
 data PerfValue = RealValue Double | IntegralValue Int64
@@ -39,3 +41,5 @@ data PerfDatum = PerfDatum
     }
   deriving (Eq, Show)
 
+class ToPerfData a where
+    { toPerfData :: a -> [PerfDatum] }

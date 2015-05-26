@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import System.Nagios.Plugin
+import           System.Nagios.Plugin
 
 universeCheck :: Double -> NagiosPlugin ()
 universeCheck pi' = do

@@ -11,5 +11,5 @@ module System.Nagios.Plugin
 ) where
 
 import           System.Nagios.Plugin.Check
-import           System.Nagios.Plugin.Range
 import           System.Nagios.Plugin.PerfData
+import           System.Nagios.Plugin.Range

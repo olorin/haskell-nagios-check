@@ -11,6 +11,7 @@ module System.Nagios.Plugin.Check
     runNagiosPlugin,
     runNagiosPlugin',
     addPerfDatum,
+    addPerfData,
     addBarePerfDatum,
     addResult,
     checkStatus,
@@ -20,16 +21,16 @@ module System.Nagios.Plugin.Check
 ) where
 
 import           Control.Applicative
-import qualified Control.Monad.Catch as E
+import qualified Control.Monad.Catch           as E
 import           Control.Monad.State.Lazy
 import           Data.Bifunctor
 import           Data.Monoid
-import           Data.Text                   (Text)
-import qualified Data.Text                   as T
-import qualified Data.Text.IO                as T
+import           Data.Text                     (Text)
+import qualified Data.Text                     as T
+import qualified Data.Text.IO                  as T
 import           System.Exit
 
-import System.Nagios.Plugin.PerfData
+import           System.Nagios.Plugin.PerfData
 
 -- | Nagios plugin exit statuses. Ordered by priority -
 --   'OK' < 'Warning' < 'Critical' < 'Unknown', which correspond to plugin exit
@@ -129,6 +130,14 @@ addBarePerfDatum ::
     -> NagiosPlugin ()
 addBarePerfDatum info val uom =
     addPerfDatum info val uom Nothing Nothing Nothing Nothing
+
+-- | Alternative mechanism for adding perfdata generated from complex
+--   types; just implement the 'toPerfData' typeclass.
+addPerfData ::
+       ToPerfData a
+    => a
+    -> NagiosPlugin ()
+addPerfData pd = modify (second (++ toPerfData pd))
 
 -- | The result which will be used if no other results have been
 --   provided.
