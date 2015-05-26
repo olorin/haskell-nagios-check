@@ -8,7 +8,7 @@ module System.Nagios.Plugin.Range
     Range
 ) where
 
-import           System.Nagios.Plugin.Check (PerfValue)
+import           System.Nagios.Plugin.PerfData (PerfValue)
 
 -- | A 'Range' is a combination of a lower boundary and an upper boundary (x,y).
 --   An 'AcceptableRange' asserts that measured values between x and y

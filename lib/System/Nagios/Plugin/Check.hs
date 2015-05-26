@@ -7,8 +7,6 @@ module System.Nagios.Plugin.Check
 (
     CheckStatus(..),
     CheckResult,
-    UOM(..),
-    PerfValue(..),
     NagiosPlugin,
     runNagiosPlugin,
     runNagiosPlugin',
@@ -18,7 +16,6 @@ module System.Nagios.Plugin.Check
     checkStatus,
     checkInfo,
     worstResult,
-    PerfDatum,
     finishState
 ) where
 
@@ -26,13 +23,13 @@ import           Control.Applicative
 import qualified Control.Monad.Catch as E
 import           Control.Monad.State.Lazy
 import           Data.Bifunctor
-import           Data.Int
 import           Data.Monoid
-import           Data.Nagios.Perfdata.Metric (UOM (..))
 import           Data.Text                   (Text)
 import qualified Data.Text                   as T
 import qualified Data.Text.IO                as T
 import           System.Exit
+
+import System.Nagios.Plugin.PerfData
 
 -- | Nagios plugin exit statuses. Ordered by priority -
 --   'OK' < 'Warning' < 'Critical' < 'Unknown', which correspond to plugin exit
@@ -72,31 +69,6 @@ checkStatus = fst . unCheckResult
 -- | Extract the infotext from a 'CheckResult'.
 checkInfo :: CheckResult -> Text
 checkInfo = snd . unCheckResult
-
--- | Value of a performance metric.
-data PerfValue = RealValue Double | IntegralValue Int64
-  deriving (Eq, Ord)
-
-instance Show PerfValue where
-    show (RealValue x) = show x
-    show (IntegralValue x) = show x
-
--- | One performance metric. A plugin will output zero or more of these,
---   whereupon Nagios generally passes them off to an external system such
---   as <http://oss.oetiker.ch/rrdtool/ RRDTool> or
---   <https://github.com/anchor/vaultaire Vaultaire>.
---   The thresholds are purely informative (designed to be graphed), and
---   do not affect alerting; likewise with `_min` and `_max`.
-data PerfDatum = PerfDatum
-    { _label :: Text             -- ^ Name of quantity being measured.
-    , _value :: PerfValue        -- ^ Measured value, integral or real.
-    , _uom   :: UOM              -- ^ Unit of measure; 'NullUOM' is fine here.
-    , _min   :: Maybe PerfValue  -- ^ Measured quantity cannot be lower than this.
-    , _max   :: Maybe PerfValue  -- ^ Measured quantity cannot be higher than this.
-    , _warn  :: Maybe PerfValue  -- ^ Warning threshold for graphing.
-    , _crit  :: Maybe PerfValue  -- ^ Critical threshold for graphing.
-    }
-  deriving (Eq, Show)
 
 -- | Current check results/perfdata. If the check suddenly dies, the
 --   'worst' of the CheckResults (and all the PerfDatums) will be used
