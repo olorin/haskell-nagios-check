@@ -9,7 +9,8 @@ module System.Nagios.Plugin.PerfData
     PerfValue(..),
     PerfDatum(..),
     ToPerfData,
-    toPerfData
+    toPerfData,
+    barePerfDatum
 ) where
 
 import           Data.Int
@@ -43,3 +44,12 @@ data PerfDatum = PerfDatum
 
 class ToPerfData a where
     { toPerfData :: a -> [PerfDatum] }
+
+-- | Create a PerfDatum from only the required values, using Nothing
+--   for all the others.
+barePerfDatum ::
+       Text
+    -> PerfValue
+    -> UOM
+    -> PerfDatum
+barePerfDatum info val uom = PerfDatum info val uom Nothing Nothing Nothing Nothing
