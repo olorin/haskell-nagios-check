@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.0
+
+ - Added addPerfData function and ToPerfData typeclass for more convenient
+   generation of perfdata from complex data structures.
+
 ## v0.2.1
 
  - Support for GHC 7.4 (Justin S. Leitgeib, @jsl).
