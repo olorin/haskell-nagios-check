@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.1
+
+ - Fix bug in perfdata rendering wherein scientific notation was used
+   for large/small values.
+
 ## v0.3.0
 
  - Added addPerfData function and ToPerfData typeclass for more convenient

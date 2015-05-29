@@ -16,13 +16,14 @@ module System.Nagios.Plugin.PerfData
 import           Data.Int
 import           Data.Nagios.Perfdata.Metric (UOM (..))
 import           Data.Text                   (Text)
+import           Numeric
 
 -- | Value of a performance metric.
 data PerfValue = RealValue Double | IntegralValue Int64
   deriving (Eq, Ord)
 
 instance Show PerfValue where
-    show (RealValue x) = show x
+    show (RealValue x) = showFFloat (Just 4) x ""
     show (IntegralValue x) = show x
 
 -- | One performance metric. A plugin will output zero or more of these,
