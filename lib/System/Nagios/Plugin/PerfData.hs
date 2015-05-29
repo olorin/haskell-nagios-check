@@ -23,7 +23,7 @@ data PerfValue = RealValue Double | IntegralValue Int64
   deriving (Eq, Ord)
 
 instance Show PerfValue where
-    show (RealValue x) = showFFloat (Just 4) x ""
+    show (RealValue x) = showFFloat Nothing x ""
     show (IntegralValue x) = show x
 
 -- | One performance metric. A plugin will output zero or more of these,
