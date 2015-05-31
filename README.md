@@ -19,3 +19,7 @@ universeCheck pi' = do
 main :: IO ()
 main = runNagiosPlugin (universeCheck 3.1415)
 ```
+
+# Dependencies
+
+nagios-check has been tested with GHC 7.8 and 7.10.
