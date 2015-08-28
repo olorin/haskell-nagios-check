@@ -1,0 +1,6 @@
+flags: {}
+packages:
+- '.'
+extra-deps:
+- nagios-perfdata-0.2.2
+resolver: lts-3.2
