@@ -14,9 +14,41 @@ module System.Nagios.Plugin.PerfData
 ) where
 
 import           Data.Int
-import           Data.Nagios.Perfdata.Metric (UOM (..))
-import           Data.Text                   (Text)
+import           Data.Text (Text)
+
 import           Numeric
+
+-- | A Nagios "unit of measure". 'NoUOM' translates to an empty
+-- string in the check output; it is idiomatic to use it liberally
+-- whenever the standard units do not fit.
+data UOM =
+    Second
+  | Millisecond
+  | Microsecond
+  | Percent
+  | Byte
+  | Kilobyte
+  | Megabyte
+  | Gigabyte
+  | Terabyte
+  | Counter
+  | NullUnit
+  | UnknownUOM
+  deriving (Eq)
+
+instance Show UOM where
+    show Second      = "s"
+    show Millisecond      = "ms"
+    show Microsecond      = "us"
+    show Percent     = "%"
+    show Byte        = "B"
+    show Kilobyte        = "KB"
+    show Megabyte        = "MB"
+    show Gigabyte        = "GB"
+    show Terabyte        = "GB"
+    show Counter     = "c"
+    show NullUnit    = ""
+    show UnknownUOM  = "?"
 
 -- | Value of a performance metric.
 data PerfValue = RealValue Double | IntegralValue Int64
@@ -35,7 +67,7 @@ instance Show PerfValue where
 data PerfDatum = PerfDatum
     { _label :: Text             -- ^ Name of quantity being measured.
     , _value :: PerfValue        -- ^ Measured value, integral or real.
-    , _uom   :: UOM              -- ^ Unit of measure; 'NullUOM' is fine here.
+    , _uom   :: UOM              -- ^ Unit of measure; 'NoUOM' is fine here.
     , _min   :: Maybe PerfValue  -- ^ Measured quantity cannot be lower than this.
     , _max   :: Maybe PerfValue  -- ^ Measured quantity cannot be higher than this.
     , _warn  :: Maybe PerfValue  -- ^ Warning threshold for graphing.
