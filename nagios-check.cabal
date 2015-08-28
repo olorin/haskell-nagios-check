@@ -11,6 +11,8 @@ author:              Sharif Olorin
 maintainer:          sio@tesser.org
 copyright:           2014 Sharif Olorin
 category:            System
+                   , Monitoring
+                   , Metrics
 build-type:          Simple
 extra-source-files:  README.md,
                      CHANGELOG.md
