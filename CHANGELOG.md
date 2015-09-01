@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.2
+
+ - Deprecate `UnknownUOM`.
+
 ## v0.3.1
 
  - Fix bug in perfdata rendering wherein scientific notation was used

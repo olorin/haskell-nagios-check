@@ -50,6 +50,8 @@ instance Show UOM where
     show NullUnit    = ""
     show UnknownUOM  = "?"
 
+{-# DEPRECATED UnknownUOM "Will be removed in 0.4.0 in favour of failing on parse." #-}
+
 -- | Value of a performance metric.
 data PerfValue = RealValue Double | IntegralValue Int64
   deriving (Eq, Ord)
