@@ -13,10 +13,14 @@ module System.Nagios.Plugin.PerfData
     barePerfDatum
 ) where
 
+import           Control.Applicative
+
 import           Data.Int
-import           Data.Text (Text)
+import           Data.Text       (Text)
 
 import           Numeric
+
+import           Test.QuickCheck
 
 -- | A Nagios "unit of measure". 'NoUOM' translates to an empty
 -- string in the check output; it is idiomatic to use it liberally
@@ -38,19 +42,35 @@ data UOM =
 
 instance Show UOM where
     show Second      = "s"
-    show Millisecond      = "ms"
-    show Microsecond      = "us"
+    show Millisecond = "ms"
+    show Microsecond = "us"
     show Percent     = "%"
     show Byte        = "B"
-    show Kilobyte        = "KB"
-    show Megabyte        = "MB"
-    show Gigabyte        = "GB"
-    show Terabyte        = "GB"
+    show Kilobyte    = "KB"
+    show Megabyte    = "MB"
+    show Gigabyte    = "GB"
+    show Terabyte    = "GB"
     show Counter     = "c"
     show NullUnit    = ""
     show UnknownUOM  = "?"
 
 {-# DEPRECATED UnknownUOM "Will be removed in 0.4.0 in favour of failing on parse." #-}
+
+instance Arbitrary UOM where
+    arbitrary = elements $
+        [ Second
+        , Millisecond
+        , Microsecond
+        , Percent
+        , Byte
+        , Kilobyte
+        , Megabyte
+        , Gigabyte
+        , Terabyte
+        , Counter
+        , NullUnit
+        , UnknownUOM
+        ]
 
 -- | Value of a performance metric.
 data PerfValue = RealValue Double | IntegralValue Int64
@@ -59,6 +79,12 @@ data PerfValue = RealValue Double | IntegralValue Int64
 instance Show PerfValue where
     show (RealValue x) = showFFloat Nothing x ""
     show (IntegralValue x) = show x
+
+instance Arbitrary PerfValue where
+    arbitrary = oneof $
+        [ RealValue <$> arbitrary
+        , IntegralValue <$> arbitrary
+        ]
 
 -- | One performance metric. A plugin will output zero or more of these,
 --   whereupon Nagios generally passes them off to an external system such
