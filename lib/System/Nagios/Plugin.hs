@@ -1,8 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE RecordWildCards            #-}
-{-# LANGUAGE TupleSections              #-}
-
 module System.Nagios.Plugin
 (
     module System.Nagios.Plugin.Check,
