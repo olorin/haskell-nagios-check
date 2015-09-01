@@ -4,6 +4,7 @@
 
  - Deprecate `UnknownUOM`.
  - Remove unused `Range` type until it's actually implemented. 
+ - Remove dependency on `nagios-perfdata`.
 
 ## v0.3.1
 
