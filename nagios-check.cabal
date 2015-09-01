@@ -4,7 +4,7 @@ synopsis:              Package for writing monitoring plugins
 description:           Implements Nagios plugin development guidelines
                        within a Haskell framework for writing Nagios
                        checks.
-homepage:              https://github.com/fractalcat/haskell-nagios-check
+homepage:              https://github.com/olorin/haskell-nagios-check
 license:               MIT
 license-file:          LICENSE
 author:                Sharif Olorin
