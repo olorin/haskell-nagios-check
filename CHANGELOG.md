@@ -3,6 +3,7 @@
 ## v0.3.2
 
  - Deprecate `UnknownUOM`.
+ - Remove unused `Range` type until it's actually implemented. 
 
 ## v0.3.1
 
