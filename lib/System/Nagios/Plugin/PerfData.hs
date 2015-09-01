@@ -37,7 +37,6 @@ data UOM =
   | Terabyte
   | Counter
   | NullUnit
-  | UnknownUOM
   deriving (Eq)
 
 instance Show UOM where
@@ -52,9 +51,6 @@ instance Show UOM where
     show Terabyte    = "GB"
     show Counter     = "c"
     show NullUnit    = ""
-    show UnknownUOM  = "?"
-
-{-# DEPRECATED UnknownUOM "Will be removed in 0.4.0 in favour of failing on parse." #-}
 
 instance Arbitrary UOM where
     arbitrary = elements $
@@ -69,7 +65,6 @@ instance Arbitrary UOM where
         , Terabyte
         , Counter
         , NullUnit
-        , UnknownUOM
         ]
 
 -- | Value of a performance metric.
