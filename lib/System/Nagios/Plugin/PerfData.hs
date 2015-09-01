@@ -91,15 +91,15 @@ instance Arbitrary PerfValue where
 --   as <http://oss.oetiker.ch/rrdtool/ RRDTool> or
 --   <https://github.com/anchor/vaultaire Vaultaire>.
 --   The thresholds are purely informative (designed to be graphed), and
---   do not affect alerting; likewise with `_min` and `_max`.
+--   do not affect alerting; likewise with `min` and `max`.
 data PerfDatum = PerfDatum
-    { _label :: Text             -- ^ Name of quantity being measured.
-    , _value :: PerfValue        -- ^ Measured value, integral or real.
-    , _uom   :: UOM              -- ^ Unit of measure; 'NoUOM' is fine here.
-    , _min   :: Maybe PerfValue  -- ^ Measured quantity cannot be lower than this.
-    , _max   :: Maybe PerfValue  -- ^ Measured quantity cannot be higher than this.
-    , _warn  :: Maybe PerfValue  -- ^ Warning threshold for graphing.
-    , _crit  :: Maybe PerfValue  -- ^ Critical threshold for graphing.
+    { perfLabel :: Text             -- ^ Name of quantity being measured.
+    , perfValue :: PerfValue        -- ^ Measured value, integral or real.
+    , perfUom   :: UOM              -- ^ Unit of measure; 'NoUOM' is fine here.
+    , perfMin   :: Maybe PerfValue  -- ^ Measured quantity cannot be lower than this.
+    , perfMax   :: Maybe PerfValue  -- ^ Measured quantity cannot be higher than this.
+    , perfWarn  :: Maybe PerfValue  -- ^ Warning threshold for graphing.
+    , perfCrit  :: Maybe PerfValue  -- ^ Critical threshold for graphing.
     }
   deriving (Eq, Show)
 

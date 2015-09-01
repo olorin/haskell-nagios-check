@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.0
+
+ - Update PerfDatum field names to make them easier to use.
+
 ## v0.3.2
 
  - Deprecate `UnknownUOM`.

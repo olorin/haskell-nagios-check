@@ -1,5 +1,5 @@
 name:                  nagios-check
-version:               0.3.2
+version:               0.4.0
 synopsis:              Package for writing monitoring plugins
 description:           Implements Nagios plugin development guidelines
                        within a Haskell framework for writing Nagios

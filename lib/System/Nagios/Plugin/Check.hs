@@ -165,14 +165,14 @@ fmtPerfData :: [PerfDatum] -> Text
 fmtPerfData = T.intercalate " " . map fmtPerfDatum
   where
     fmtPerfDatum PerfDatum{..} = T.concat
-        [ _label
+        [ perfLabel
         , "="
-        , T.pack (show _value)
-        , T.pack (show _uom)
-        , fmtThreshold _warn
-        , fmtThreshold _crit
-        , fmtThreshold _min
-        , fmtThreshold _max
+        , T.pack (show perfValue)
+        , T.pack (show perfUom)
+        , fmtThreshold perfWarn
+        , fmtThreshold perfCrit
+        , fmtThreshold perfMin
+        , fmtThreshold perfMax
         ]
 
     fmtThreshold Nothing = ";"
