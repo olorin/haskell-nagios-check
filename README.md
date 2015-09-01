@@ -4,6 +4,10 @@
 
 Write Nagios (or Icinga, Shinken, et cetera) plugins in Haskell.
 
+## Documentation
+
+On [Hackage](https://hackage.haskell.org/package/nagios-check).
+
 ## Example usage
 
 ```haskell
