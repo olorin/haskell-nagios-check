@@ -1,8 +1,12 @@
 module System.Nagios.Plugin
 (
-    module System.Nagios.Plugin.Check,
-    module System.Nagios.Plugin.Range,
-    module System.Nagios.Plugin.PerfData
+      -- * Plugin types and control flow
+      module System.Nagios.Plugin.Check
+      -- * Nagios performance data
+    , module System.Nagios.Plugin.PerfData
+      -- * Perfdata ranges
+    , module System.Nagios.Plugin.Range
+
 ) where
 
 import           System.Nagios.Plugin.Check
