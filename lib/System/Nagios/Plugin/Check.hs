@@ -23,14 +23,17 @@ module System.Nagios.Plugin.Check
 import           Control.Applicative
 import qualified Control.Monad.Catch           as E
 import           Control.Monad.State.Lazy
+
 import           Data.Bifunctor
 import           Data.Monoid
 import           Data.Text                     (Text)
 import qualified Data.Text                     as T
 import qualified Data.Text.IO                  as T
-import           System.Exit
 
+import           System.Exit
 import           System.Nagios.Plugin.PerfData
+
+import           Test.QuickCheck
 
 -- | Nagios plugin exit statuses. Ordered by priority -
 --   'OK' < 'Warning' < 'Critical' < 'Unknown', which correspond to plugin exit
@@ -44,6 +47,14 @@ data CheckStatus = OK       -- ^ Check executed successfully and
                  | Unknown  -- ^ Check unable to determine service
                             --   status.
   deriving (Enum, Eq, Ord)
+
+instance Arbitrary CheckStatus where
+    arbitrary = elements $
+        [ OK
+        , Warning
+        , Critical
+        , Unknown
+        ]
 
 instance Show CheckStatus where
     show OK = "OK"
