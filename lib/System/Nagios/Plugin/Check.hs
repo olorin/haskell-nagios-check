@@ -132,7 +132,7 @@ addBarePerfDatum info val uom =
     addPerfDatum info val uom Nothing Nothing Nothing Nothing
 
 -- | Alternative mechanism for adding perfdata generated from complex
---   types; just implement the 'toPerfData' typeclass.
+--   types; just implement the 'ToPerfData' typeclass.
 addPerfData ::
        ToPerfData a
     => a
