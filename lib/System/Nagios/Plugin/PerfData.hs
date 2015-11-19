@@ -22,7 +22,7 @@ import           Numeric
 
 import           Test.QuickCheck
 
--- | A Nagios "unit of measure". 'NoUOM' translates to an empty
+-- | A Nagios "unit of measure". 'NullUnit' translates to an empty
 -- string in the check output; it is idiomatic to use it liberally
 -- whenever the standard units do not fit.
 data UOM =
