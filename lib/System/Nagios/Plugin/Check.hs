@@ -32,6 +32,9 @@ import           System.Exit
 
 import           System.Nagios.Plugin.PerfData
 
+-- Avoid redundant import warnings with GHC > 7.8.
+import           Prelude
+
 -- | Nagios plugin exit statuses. Ordered by priority -
 --   'OK' < 'Warning' < 'Critical' < 'Unknown', which correspond to plugin exit
 --   statuses of 0, 1, 2, and 3 respectively.
